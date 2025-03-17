@@ -8,100 +8,43 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var habit = Habit()
-    @State private var showingStats = false
-    @State private var showingHabitEdit = false
+    @StateObject private var habitStore = HabitStore()
+    @State private var selectedTab = 0
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Text("Habit Tracker")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                if !habit.details.name.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(habit.details.name)
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text(habit.details.description)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Text("Frequency: \(habit.details.frequency.capitalized)")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                
-                Spacer()
-                
-                HStack {
-                    Button(action: {
-                        showingStats = true
-                    }) {
-                        Image(systemName: "chart.bar.fill")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                    }
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        showingHabitEdit = true
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.blue)
-                            .shadow(radius: 5)
-                    }
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        habit.addCompletion()
-                    }) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.green)
-                    }
-                }
-                .padding()
+        TabView(selection: $selectedTab) {
+            NavigationView {
+                HabitListView(habitStore: habitStore)
             }
-            .padding()
-            .navigationBarHidden(true)
-            .sheet(isPresented: $showingStats) {
-                StatsView(habit: habit)
+            .tabItem {
+                Image(systemName: "list.bullet")
+                Text("Habits")
             }
-            .sheet(isPresented: $showingHabitEdit) {
-                HabitEditView(habit: habit)
+            .tag(0)
+            
+            NavigationView {
+                StatsView(habitStore: habitStore)
             }
+            .tabItem {
+                Image(systemName: "chart.bar.fill")
+                Text("Stats")
+            }
+            .tag(1)
         }
     }
 }
 
 struct StatsView: View {
-    @ObservedObject var habit: Habit
-    @Environment(\.dismiss) var dismiss
+    @ObservedObject var habitStore: HabitStore
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    ContributionGraph(data: habit.getCompletionsForLastNDays(49))
-                        .padding()
-                }
+        ScrollView {
+            VStack(spacing: 20) {
+                ContributionGraph(data: habitStore.getCompletionsForLastNDays(49))
+                    .padding()
             }
-            .navigationTitle("Habit Statistics")
-            .navigationBarItems(trailing: Button("Done") {
-                dismiss()
-            })
         }
+        .navigationTitle("Statistics")
     }
 }
 

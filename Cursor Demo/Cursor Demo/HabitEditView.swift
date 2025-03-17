@@ -1,41 +1,48 @@
 import SwiftUI
 
 struct HabitEditView: View {
-    @ObservedObject var habit: Habit
+    @ObservedObject var habitStore: HabitStore
     @Environment(\.dismiss) var dismiss
+    
+    @State private var name = ""
+    @State private var description = ""
+    @State private var frequency = "daily"
+    @State private var reminderTime: Date = Date()
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Basic Information")) {
-                    TextField("Habit Name", text: $habit.details.name)
-                    TextField("Description", text: $habit.details.description)
+                    TextField("Habit Name", text: $name)
+                    TextField("Description", text: $description)
                 }
                 
                 Section(header: Text("Schedule")) {
-                    DatePicker("Target Date", selection: $habit.details.targetDate, displayedComponents: .date)
-                    
-                    Picker("Frequency", selection: $habit.details.frequency) {
+                    Picker("Frequency", selection: $frequency) {
                         Text("Daily").tag("daily")
                         Text("Weekly").tag("weekly")
                         Text("Monthly").tag("monthly")
                     }
                     
-                    DatePicker("Reminder Time", selection: Binding(
-                        get: { habit.details.reminderTime ?? Date() },
-                        set: { habit.details.reminderTime = $0 }
-                    ), displayedComponents: .hourAndMinute)
+                    DatePicker("Reminder Time", selection: $reminderTime, displayedComponents: .hourAndMinute)
                 }
             }
-            .navigationTitle("Edit Habit")
+            .navigationTitle("New Habit")
             .navigationBarItems(
                 leading: Button("Cancel") {
                     dismiss()
                 },
                 trailing: Button("Save") {
-                    habit.addCompletion()
+                    let newHabit = HabitDetails(
+                        name: name,
+                        description: description,
+                        frequency: frequency,
+                        reminderTime: reminderTime
+                    )
+                    habitStore.addHabit(newHabit)
                     dismiss()
                 }
+                .disabled(name.isEmpty)
             )
         }
     }
