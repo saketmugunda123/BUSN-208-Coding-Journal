@@ -1,54 +1,55 @@
 import SwiftUI
 
+// View that displays a GitHub-style contribution graph
 struct ContributionGraph: View {
-    let data: [(Date, Int)]
+    let data: [(Date, Int)] // Array of (date, completion count) tuples
+    // Grid layout with 7 columns (one for each day of the week)
     let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 16) {
+            // Title of the graph
             Text("Activity Calendar")
                 .font(.headline)
+                .foregroundColor(Theme.textPrimary)
                 .padding(.horizontal)
             
+            // Legend showing activity levels
             HStack {
                 Text("Less")
+                    .foregroundColor(Theme.textSecondary)
                 ForEach(0..<5) { i in
                     Rectangle()
-                        .fill(colorForCount(i))
+                        .fill(Theme.contributionColors[i])
                         .frame(width: 20, height: 20)
                         .cornerRadius(2)
                 }
                 Text("More")
+                    .foregroundColor(Theme.textSecondary)
             }
             .padding(.horizontal)
             
-            LazyVGrid(columns: columns, spacing: 4) {
-                ForEach(data, id: \.0) { date, count in
-                    Rectangle()
-                        .fill(colorForCount(count))
-                        .aspectRatio(1, contentMode: .fit)
-                        .cornerRadius(2)
-                        .overlay(
-                            Text("\(count)")
-                                .font(.caption2)
-                                .foregroundColor(count > 0 ? .white : .clear)
-                        )
+            // Grid of completion squares
+            GeometryReader { geometry in
+                let squareSize = min(geometry.size.width / 7, geometry.size.height / 7)
+                LazyVGrid(columns: columns, spacing: 4) {
+                    ForEach(data, id: \.0) { date, count in
+                        Rectangle()
+                            .fill(Theme.contributionColors[min(count, 4)])
+                            .frame(width: squareSize, height: squareSize)
+                            .cornerRadius(2)
+                            // Show completion count on squares with activity
+                            .overlay(
+                                Text("\(count)")
+                                    .font(.caption2)
+                                    .foregroundColor(count > 0 ? Theme.textPrimary : .clear)
+                            )
+                    }
                 }
+                .padding()
             }
-            .padding()
+            .frame(height: 300) // Fixed height for the grid
         }
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(radius: 5)
-    }
-    
-    private func colorForCount(_ count: Int) -> Color {
-        switch count {
-        case 0: return Color(.systemGray6)
-        case 1: return Color.blue.opacity(0.3)
-        case 2: return Color.blue.opacity(0.5)
-        case 3: return Color.blue.opacity(0.7)
-        default: return Color.blue
-        }
+        .cardStyle()
     }
 } 

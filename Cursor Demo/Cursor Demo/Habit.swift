@@ -1,5 +1,6 @@
 import Foundation
 
+// Represents a single completion of a habit with a timestamp
 struct HabitCompletion: Identifiable, Codable {
     let id: UUID
     let date: Date
@@ -10,6 +11,7 @@ struct HabitCompletion: Identifiable, Codable {
     }
 }
 
+// Represents the details and state of a habit
 struct HabitDetails: Identifiable, Codable {
     let id: UUID
     var name: String
@@ -27,6 +29,7 @@ struct HabitDetails: Identifiable, Codable {
         self.lastCompletedDate = lastCompletedDate
     }
     
+    // Determines if the habit is completed for the current period based on its frequency
     var isCompletedToday: Bool {
         guard let lastCompleted = lastCompletedDate else { return false }
         let calendar = Calendar.current
@@ -34,11 +37,14 @@ struct HabitDetails: Identifiable, Codable {
         
         switch frequency {
         case "daily":
+            // Check if completed today
             return calendar.isDate(lastCompleted, inSameDayAs: today)
         case "weekly":
+            // Check if completed within the last 7 days
             let weekAgo = calendar.date(byAdding: .day, value: -7, to: today)!
             return lastCompleted > weekAgo
         case "monthly":
+            // Check if completed within the last month
             let monthAgo = calendar.date(byAdding: .month, value: -1, to: today)!
             return lastCompleted > monthAgo
         default:
@@ -47,6 +53,7 @@ struct HabitDetails: Identifiable, Codable {
     }
 }
 
+// Manages the collection of habits and their completions
 class HabitStore: ObservableObject {
     @Published var habits: [HabitDetails]
     @Published var completions: [HabitCompletion]
@@ -56,10 +63,12 @@ class HabitStore: ObservableObject {
         self.completions = completions
     }
     
+    // Adds a new habit to the collection
     func addHabit(_ habit: HabitDetails) {
         habits.append(habit)
     }
     
+    // Marks a habit as completed and records the completion
     func completeHabit(_ habit: HabitDetails) {
         if let index = habits.firstIndex(where: { $0.id == habit.id }) {
             habits[index].lastCompletedDate = Date()
@@ -67,6 +76,7 @@ class HabitStore: ObservableObject {
         }
     }
     
+    // Returns the number of completions for a specific date
     func getCompletionsForDate(_ date: Date) -> Int {
         let calendar = Calendar.current
         return completions.filter { completion in
@@ -74,6 +84,7 @@ class HabitStore: ObservableObject {
         }.count
     }
     
+    // Returns completion data for the last N days
     func getCompletionsForLastNDays(_ n: Int) -> [(Date, Int)] {
         let calendar = Calendar.current
         let today = Date()
