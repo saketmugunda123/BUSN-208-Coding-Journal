@@ -7,7 +7,7 @@ struct ContentView: View {
     @State private var isLoginMode = true
     @State private var selectedUserType = "People" // "People" or "Lawyers"
     
-    // Common fields
+    // Common fields //hello
     @State private var email = ""
     @State private var password = ""
     
