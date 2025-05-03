@@ -106,7 +106,7 @@ struct Client: Identifiable {
 }
 
 // MARK: - Lawyer model
-struct Lawyer: Identifiable {
+struct Lawyer: Identifiable, Codable {
     var id: String
     var name: String
     var lawFirmName: String

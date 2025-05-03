@@ -37,46 +37,96 @@ struct ClientDashboardView: View {
   let paymentOptions = ["Hourly", "Flat fee", "Contingency", "Unsure"]
 
   var body: some View {
-    VStack(spacing: 20) {
-      if isLoading {
-        ProgressView()
-          .scaleEffect(1.5)
-      } else {
-        // Summary
-        VStack(alignment: .leading, spacing: 8) {
-          Text("Name: \(name)")
-          Text("Location: \(location)")
-          Text("Languages: \(preferredLanguages)")
-          Text("Category: \(legalIssueCategory)")
-          Text("Concern: \(specificConcern)")
+    ScrollView {
+      VStack(spacing: 24) {
+        if isLoading {
+          ProgressView()
+            .scaleEffect(1.5)
+        } else {
+          // Profile Card
+          VStack(alignment: .leading, spacing: 16) {
+            HStack {
+              Image(systemName: "person.circle.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.blue)
+              
+              VStack(alignment: .leading, spacing: 4) {
+                Text(name)
+                  .font(.title2)
+                  .fontWeight(.bold)
+                Text(location)
+                  .font(.subheadline)
+                  .foregroundColor(.secondary)
+              }
+              
+              Spacer()
+              
+              Button(action: { isEditing = true }) {
+                Image(systemName: "pencil")
+                  .foregroundColor(.blue)
+              }
+            }
+            .padding(.bottom, 8)
+            
+            Divider()
+            
+            // Quick Info Section
+            VStack(alignment: .leading, spacing: 12) {
+              InfoRow(icon: "globe", title: "Languages", value: preferredLanguages)
+              InfoRow(icon: "briefcase", title: "Legal Category", value: legalIssueCategory)
+              InfoRow(icon: "exclamationmark.triangle", title: "Concern", value: specificConcern)
+            }
+          }
+          .padding()
+          .background(Color(.systemBackground))
+          .cornerRadius(12)
+          .shadow(radius: 2)
+          .padding(.horizontal)
+          
+          // Action Buttons
+          HStack(spacing: 16) {
+            NavigationLink(destination: FindLawyersView(clientId: uid)) {
+              ActionButton(title: "Find Lawyers", icon: "magnifyingglass", color: .blue)
+            }
+            
+            NavigationLink(destination: AppointmentListView(clientId: uid)) {
+              ActionButton(title: "Appointments", icon: "calendar", color: .green)
+            }
+          }
+          .padding(.horizontal)
+          
+          // Status Section
+          VStack(alignment: .leading, spacing: 16) {
+            Text("Case Status")
+              .font(.headline)
+              .padding(.horizontal)
+            
+            VStack(alignment: .leading, spacing: 12) {
+              StatusRow(title: "Urgency", value: urgency, icon: "clock")
+              StatusRow(title: "Contact Method", value: preferredContactMethod, icon: "phone")
+              StatusRow(title: "Budget Range", value: budgetRange, icon: "dollarsign.circle")
+            }
+            .padding()
+            .background(Color(.systemBackground))
+            .cornerRadius(12)
+            .shadow(radius: 2)
+            .padding(.horizontal)
+          }
         }
-        .padding()
-
-        Button("Edit Profile") {
-          isEditing = true
+        
+        if !message.isEmpty {
+          Text(message)
+            .foregroundColor(.green)
+            .padding()
+            .background(Color.green.opacity(0.1))
+            .cornerRadius(8)
+            .padding(.horizontal)
         }
-        .buttonStyle(.borderedProminent)
-        .padding(.horizontal)
-
-          NavigationLink("Find Lawyers",
-              destination: FindLawyersView(clientId: uid)
-          )
-          NavigationLink("View Appointments",
-                         destination: AppointmentListView(clientId: uid))
-            .padding(.top, 8)
-
-          .padding(.top)
       }
-
-      if !message.isEmpty {
-        Text(message)
-          .foregroundColor(.green)
-          .padding(.top)
-      }
-
-      Spacer()
+      .padding(.vertical)
     }
-    .navigationTitle("Client Dashboard")
+    .navigationTitle("Dashboard")
+    .background(Color(.systemGroupedBackground))
     .onAppear(perform: loadProfile)
     .sheet(isPresented: $isEditing) {
       NavigationStack {
@@ -298,4 +348,60 @@ struct FindLawyersView: View {
   }
 }
 
+// MARK: - Supporting Views
 
+struct InfoRow: View {
+  let icon: String
+  let title: String
+  let value: String
+  
+  var body: some View {
+    HStack {
+      Image(systemName: icon)
+        .foregroundColor(.blue)
+        .frame(width: 24)
+      Text(title)
+        .foregroundColor(.secondary)
+      Spacer()
+      Text(value)
+        .fontWeight(.medium)
+    }
+  }
+}
+
+struct ActionButton: View {
+  let title: String
+  let icon: String
+  let color: Color
+  
+  var body: some View {
+    HStack {
+      Image(systemName: icon)
+      Text(title)
+    }
+    .frame(maxWidth: .infinity)
+    .padding()
+    .background(color)
+    .foregroundColor(.white)
+    .cornerRadius(10)
+  }
+}
+
+struct StatusRow: View {
+  let title: String
+  let value: String
+  let icon: String
+  
+  var body: some View {
+    HStack {
+      Image(systemName: icon)
+        .foregroundColor(.blue)
+        .frame(width: 24)
+      Text(title)
+        .foregroundColor(.secondary)
+      Spacer()
+      Text(value)
+        .fontWeight(.medium)
+    }
+  }
+}
